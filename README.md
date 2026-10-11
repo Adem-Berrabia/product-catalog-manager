@@ -1,47 +1,93 @@
-# TP1 – Application CRUD Full Stack (WSL2 Ubuntu)
+# Product Catalog Manager
 
-Stack : **React (Vite)** + **FastAPI** + **PostgreSQL**
+![CI](https://github.com/Adem-Berrabia/product-catalog-manager/actions/workflows/ci.yml/badge.svg)
+![License](https://img.shields.io/badge/license-MIT-blue)
+![Python](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
+![React](https://img.shields.io/badge/react-18-61DAFB?logo=react&logoColor=black)
+![PostgreSQL](https://img.shields.io/badge/postgresql-16-4169E1?logo=postgresql&logoColor=white)
+![Docker](https://img.shields.io/badge/docker-compose-2496ED?logo=docker&logoColor=white)
+
+A full stack web application to manage products (Create, Read, Update, Delete),
+built with **React**, **FastAPI** and **PostgreSQL**, and developed entirely in **WSL2 Ubuntu**.
+
+## Features
+
+- Add, list, view, edit and delete products
+- Search by name or description (case-insensitive)
+- Client-side and server-side validation with clear error messages
+- REST API documented automatically (Swagger / OpenAPI)
+- Automated tests (pytest) and CI with GitHub Actions
+- One-command startup with Docker Compose
+
+## Tech stack
+
+| Layer    | Technology                             |
+|----------|----------------------------------------|
+| Frontend | React 18, Vite                         |
+| Backend  | FastAPI, SQLAlchemy, Pydantic v2       |
+| Database | PostgreSQL 16                          |
+| DevOps   | Docker, Docker Compose, GitHub Actions |
+
+## Architecture
+
+```mermaid
+flowchart LR
+    A["React frontend :5173"] -- "REST / JSON" --> B["FastAPI backend :8000"]
+    B -- "SQLAlchemy" --> C[("PostgreSQL :5432")]
+```
+
+## Project structure
 
 ```
-tp1-crud-produits/
-├── backend/    (FastAPI, SQLAlchemy)
-└── frontend/   (React + Vite)
+.
+├── backend/              FastAPI application
+│   ├── main.py           Routes (CRUD + search)
+│   ├── models.py         SQLAlchemy models
+│   ├── schemas.py        Pydantic schemas and validation
+│   ├── database.py       Database connection
+│   ├── tests/            pytest suite
+│   └── Dockerfile
+├── frontend/             React application (Vite)
+│   ├── src/
+│   └── Dockerfile
+├── docs/screenshots/     Screenshots
+├── docker-compose.yml
+└── .github/workflows/    CI pipeline
 ```
 
-## 1. Prérequis (dans le terminal Ubuntu WSL2)
+## Quick start with Docker
 
 ```bash
-sudo apt update
-sudo apt install -y python3 python3-venv python3-pip postgresql postgresql-contrib curl
-# Node.js 20 (via nvm)
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
-source ~/.bashrc && nvm install 20
+git clone https://github.com/Adem-Berrabia/product-catalog-manager.git
+cd product-catalog-manager
+docker compose up --build
 ```
 
-## 2. Base de données PostgreSQL
+- Frontend: http://localhost:5173
+- API docs (Swagger): http://localhost:8000/docs
+
+Stop with `docker compose down` (add `-v` to also delete the database volume).
+
+## Run locally (without Docker)
+
+**Database**
 
 ```bash
 sudo service postgresql start
-sudo -u postgres psql <<SQL
-CREATE USER produits_user WITH PASSWORD 'produits_pwd';
-CREATE DATABASE produits_db OWNER produits_user;
-SQL
+sudo -u postgres psql -c "CREATE USER produits_user WITH PASSWORD 'produits_pwd';"
+sudo -u postgres psql -c "CREATE DATABASE produits_db OWNER produits_user;"
 ```
 
-## 3. Backend (port 8000)
+**Backend**
 
 ```bash
 cd backend
-python3 -m venv venv
-source venv/bin/activate
+python3 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+uvicorn main:app --reload --port 8000
 ```
 
-Documentation Swagger : http://localhost:8000/docs
-(La table `products` est créée automatiquement au démarrage.)
-
-## 4. Frontend (port 5173)
+**Frontend**
 
 ```bash
 cd frontend
@@ -49,27 +95,44 @@ npm install
 npm run dev
 ```
 
-Ouvrir http://localhost:5173 dans le navigateur Windows.
+## API
 
-## 5. Tests CRUD
+| Method | Endpoint                | Description                         |
+|--------|-------------------------|-------------------------------------|
+| POST   | `/products`             | Create a product                    |
+| GET    | `/products`             | List products                       |
+| GET    | `/products?search=term` | Search by name or description       |
+| GET    | `/products/{id}`        | Get a product                       |
+| PUT    | `/products/{id}`        | Update a product                    |
+| DELETE | `/products/{id}`        | Delete a product                    |
+
+Validation: `name` is required (max 100 characters), `price >= 0`, `quantity >= 0`.
+Invalid input returns `422` with details.
+
+## Tests
 
 ```bash
 cd backend
-./test_api.sh
+pip install -r requirements-dev.txt
+pytest -v
 ```
 
-Vérification directe en base :
+The tests use an in-memory-style SQLite database, so PostgreSQL is not needed.
+A quick end-to-end check against a running API is also available: `./backend/test_api.sh`.
 
-```bash
-sudo -u postgres psql -d produits_db -c "SELECT * FROM products;"
+## Configuration
+
+Copy `.env.example` to `.env` to change the database credentials used by Docker Compose.
+
+## Screenshots
+
+Add your screenshots to `docs/screenshots/` and reference them here:
+
+```md
+![App](docs/screenshots/app.png)
+![Swagger](docs/screenshots/swagger.png)
 ```
 
-## API REST
+## License
 
-| Méthode | URL              | Action                |
-|---------|------------------|-----------------------|
-| POST    | /products        | Ajouter un produit    |
-| GET     | /products        | Lister les produits   |
-| GET     | /products/{id}   | Consulter un produit  |
-| PUT     | /products/{id}   | Modifier un produit   |
-| DELETE  | /products/{id}   | Supprimer un produit  |
+MIT, see [LICENSE](LICENSE).
