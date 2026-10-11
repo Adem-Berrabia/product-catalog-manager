@@ -14,3 +14,13 @@ dist/
 .DS_Store
 .vscode/
 .idea/
+
+# Local offline build helpers
+backend/wheels/
+backend/Dockerfile.local
+docker-compose.override.yml
+
+# Local offline build helpers
+backend/wheels/
+backend/Dockerfile.local
+docker-compose.override.yml
