@@ -18,7 +18,7 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-produits_user}:${POSTGRES_PASSWORD:-produits_pwd}@db:5432/${POSTGRES_DB:-produits_db}
     ports:
-      - "8000:8000"
+      - "8001:8000"
     depends_on:
       db:
         condition: service_healthy
@@ -27,7 +27,7 @@ services:
     build:
       context: ./frontend
       args:
-        VITE_API_URL: http://localhost:8000
+        VITE_API_URL: http://localhost:8001
     ports:
       - "5173:80"
     depends_on:
